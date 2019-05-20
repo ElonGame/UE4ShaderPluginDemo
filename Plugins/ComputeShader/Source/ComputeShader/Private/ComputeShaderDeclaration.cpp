@@ -21,15 +21,23 @@
 * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 * THE SOFTWARE.
 ******************************************************************************/
+#include "ComputeShaderDeclaration.h"
+
 
 #include "ComputeShaderPrivatePCH.h"
 #include "ShaderParameterUtils.h"
 #include "RHIStaticStates.h"
 
+#include "CoreMinimal.h"
+#include "Modules/ModuleManager.h"
+#include "Interfaces/IPluginManager.h"
+#include "Misc/Paths.h"
+#include "ShaderCore.h"
+
 //These are needed to actually implement the constant buffers so they are available inside our shader
 //They also need to be unique over the entire solution since they can in fact be accessed from any shader
-IMPLEMENT_UNIFORM_BUFFER_STRUCT(FComputeShaderConstantParameters, TEXT("CSConstants"))
-IMPLEMENT_UNIFORM_BUFFER_STRUCT(FComputeShaderVariableParameters, TEXT("CSVariables"))
+IMPLEMENT_GLOBAL_SHADER_PARAMETER_STRUCT(FComputeShaderConstantParameters, "CSConstants");
+IMPLEMENT_GLOBAL_SHADER_PARAMETER_STRUCT(FComputeShaderVariableParameters, "CSVariables");
 
 FComputeShaderDeclaration::FComputeShaderDeclaration(const ShaderMetaType::CompiledShaderInitializerType& Initializer)
 : FGlobalShader(Initializer)
@@ -82,5 +90,26 @@ bool FComputeShaderDeclaration::ShouldCompilePermutation(const FGlobalShaderPerm
 //                      ShaderType                    ShaderFileName                Shader function name       Type
 IMPLEMENT_SHADER_TYPE(, FComputeShaderDeclaration, TEXT("/Plugin/ComputeShader/Private/ComputeShaderExample.usf"), TEXT("MainComputeShader"), SF_Compute);
 
+
+class ComputeShaderModule : public IModuleInterface
+{
+	/** IModuleInterface implementation */
+	virtual void StartupModule() override;
+	virtual void ShutdownModule() override;
+};
+
+void ComputeShaderModule::StartupModule()
+{
+	FString PluginShaderDir = FPaths::Combine(IPluginManager::Get().FindPlugin(TEXT("ComputeShader"))->GetBaseDir(), TEXT("Shaders"));
+	AddShaderSourceDirectoryMapping(TEXT("/Plugin/ComputeShader"), PluginShaderDir);
+}
+
+
+void ComputeShaderModule::ShutdownModule()
+{
+	// This function may be called during shutdown to clean up your module.  For modules that support dynamic reloading,
+	// we call this function before unloading the module.
+}
+
 //This is required for the plugin to build :)
-IMPLEMENT_MODULE(FDefaultModuleImpl, ComputeShader)
+IMPLEMENT_MODULE(ComputeShaderModule, ComputeShader)

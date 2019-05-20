@@ -4,6 +4,8 @@ namespace UnrealBuildTool.Rules
 	{
 		public ComputeShader(ReadOnlyTargetRules Target) : base(Target)
         {
+            PCHUsage = PCHUsageMode.UseExplicitOrSharedPCHs;
+
             PrivateIncludePaths.AddRange(
                 new string[] {
 					"ComputeShader/Private"
@@ -17,10 +19,17 @@ namespace UnrealBuildTool.Rules
 					"CoreUObject",
                     "Engine",
                     "RenderCore",
-                    "ShaderCore",
                     "RHI"
 				}
 				);
-		}
+
+            PrivateDependencyModuleNames.AddRange(
+            new string[]
+            {
+                "Projects",
+                // ... add private dependencies that you statically link with here ...
+            }
+            );
+        }
 	}
 }

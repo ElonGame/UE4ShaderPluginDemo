@@ -21,8 +21,11 @@
 * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 * THE SOFTWARE.
 ******************************************************************************/
+#include "PixelShaderUsageExample.h"
 
 #include "PixelShaderPrivatePCH.h"
+
+#include "CoreMinimal.h"
 #include "Public/RHIStaticStates.h"
 #include "Public/PipelineStateCache.h"
 
@@ -175,7 +178,7 @@ void FPixelShaderUsageExample::ExecutePixelShaderInternal()
 	RHICmdList.CopyToResolveTarget(
 		CurrentRenderTarget->GetRenderTargetResource()->GetRenderTargetTexture(),
 		CurrentRenderTarget->GetRenderTargetResource()->TextureRHI,
-		false, FResolveParams());
+		FResolveParams());
 
 
 	if (bSave) //Save to disk if we have a save request!

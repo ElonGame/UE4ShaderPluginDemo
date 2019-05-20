@@ -29,14 +29,14 @@
 #include "RHICommandList.h"
 
 //This buffer should contain variables that never, or rarely change
-BEGIN_UNIFORM_BUFFER_STRUCT(FComputeShaderConstantParameters, )
-UNIFORM_MEMBER(float, SimulationSpeed)
-END_UNIFORM_BUFFER_STRUCT(FComputeShaderConstantParameters)
+BEGIN_GLOBAL_SHADER_PARAMETER_STRUCT(FComputeShaderConstantParameters, )
+	SHADER_PARAMETER(float, SimulationSpeed)
+END_GLOBAL_SHADER_PARAMETER_STRUCT()
 
 //This buffer is for variables that change very often (each frame for example)
-BEGIN_UNIFORM_BUFFER_STRUCT(FComputeShaderVariableParameters, )
-UNIFORM_MEMBER(float, TotalTimeElapsedSeconds)
-END_UNIFORM_BUFFER_STRUCT(FComputeShaderVariableParameters)
+BEGIN_GLOBAL_SHADER_PARAMETER_STRUCT(FComputeShaderVariableParameters, )
+	SHADER_PARAMETER(float, TotalTimeElapsedSeconds)
+END_GLOBAL_SHADER_PARAMETER_STRUCT()
 
 typedef TUniformBufferRef<FComputeShaderConstantParameters> FComputeShaderConstantParametersRef;
 typedef TUniformBufferRef<FComputeShaderVariableParameters> FComputeShaderVariableParametersRef;

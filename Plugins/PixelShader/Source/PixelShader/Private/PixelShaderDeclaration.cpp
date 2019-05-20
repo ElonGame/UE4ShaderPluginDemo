@@ -21,17 +21,22 @@
 * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 * THE SOFTWARE.
 ******************************************************************************/
+#include "PixelShaderDeclaration.h"
 
 #include "PixelShaderPrivatePCH.h"
 #include "ShaderParameterUtils.h"
 #include "RHIStaticStates.h"
 
+#include "CoreMinimal.h"
+#include "Modules/ModuleManager.h"
+#include "Interfaces/IPluginManager.h"
+#include "Misc/Paths.h"
+#include "ShaderCore.h"
+
 //These are needed to actually implement the constant buffers so they are available inside our shader
 //They also need to be unique over the entire solution since they can in fact be accessed from any shader
-IMPLEMENT_UNIFORM_BUFFER_STRUCT(FPixelShaderConstantParameters,
-                                TEXT("PSConstant"))
-IMPLEMENT_UNIFORM_BUFFER_STRUCT(FPixelShaderVariableParameters,
-                                TEXT("PSVariable"))
+IMPLEMENT_GLOBAL_SHADER_PARAMETER_STRUCT(FPixelShaderConstantParameters, "PSConstant");
+IMPLEMENT_GLOBAL_SHADER_PARAMETER_STRUCT(FPixelShaderVariableParameters, "PSVariable");
 
 FPixelShaderDeclaration::FPixelShaderDeclaration(const
         ShaderMetaType::CompiledShaderInitializerType& Initializer)
@@ -86,17 +91,37 @@ bool FPixelShaderDeclaration::ShouldCompilePermutation(const FGlobalShaderPermut
 	return true;
 }
 
-//This is what will instantiate the shader into the engine from the engine/Shaders folder
-//                      ShaderType               ShaderFileName     Shader function name            Type
-IMPLEMENT_SHADER_TYPE(, FVertexShaderExample, TEXT("/Plugin/PixelShader/Private/PixelShaderExample.usf"),
-                      TEXT("MainVertexShader"), SF_Vertex);
-IMPLEMENT_SHADER_TYPE(, FPixelShaderDeclaration, TEXT("/Plugin/PixelShader/Private/PixelShaderExample.usf"),
-                      TEXT("MainPixelShader"), SF_Pixel);
-
-//Needed to make sure the plugin works :)
-IMPLEMENT_MODULE(FDefaultModuleImpl, PixelShader)
-
 bool FVertexShaderExample::ShouldCompilePermutation(const FGlobalShaderPermutationParameters& Parameters)
 {
 	return true;
 }
+
+//This is what will instantiate the shader into the engine from the engine/Shaders folder
+//                      ShaderType               ShaderFileName     Shader function name            Type
+IMPLEMENT_SHADER_TYPE(, FVertexShaderExample, TEXT("/Plugin/PixelShader/Private/PixelShaderExample.usf"),
+	TEXT("MainVertexShader"), SF_Vertex);
+IMPLEMENT_SHADER_TYPE(, FPixelShaderDeclaration, TEXT("/Plugin/PixelShader/Private/PixelShaderExample.usf"),
+	TEXT("MainPixelShader"), SF_Pixel);
+
+class PixelShaderModule : public IModuleInterface
+{
+	/** IModuleInterface implementation */
+	virtual void StartupModule() override;
+	virtual void ShutdownModule() override;
+};
+
+void PixelShaderModule::StartupModule()
+{
+	FString PluginShaderDir = FPaths::Combine(IPluginManager::Get().FindPlugin(TEXT("PixelShader"))->GetBaseDir(), TEXT("Shaders"));
+	AddShaderSourceDirectoryMapping(TEXT("/Plugin/PixelShader"), PluginShaderDir);
+}
+
+
+void PixelShaderModule::ShutdownModule()
+{
+	// This function may be called during shutdown to clean up your module.  For modules that support dynamic reloading,
+	// we call this function before unloading the module.
+}
+
+//Needed to make sure the plugin works :)
+IMPLEMENT_MODULE(PixelShaderModule, PixelShader)

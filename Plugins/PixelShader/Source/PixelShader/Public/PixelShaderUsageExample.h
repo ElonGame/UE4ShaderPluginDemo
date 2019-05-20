@@ -25,6 +25,7 @@
 #pragma once
 
 #include "Private/PixelShaderDeclaration.h"
+#include "Engine/TextureRenderTarget2D.h"
 
 /***************************************************************************/
 /* This class demonstrates how to use the pixel shader we have declared.   */

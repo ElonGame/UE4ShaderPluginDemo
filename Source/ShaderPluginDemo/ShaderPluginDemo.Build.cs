@@ -6,6 +6,8 @@ public class ShaderPluginDemo : ModuleRules
 {
 	public ShaderPluginDemo(ReadOnlyTargetRules Target): base(Target)
 	{
-		PublicDependencyModuleNames.AddRange(new string[] { "Core", "CoreUObject", "Engine", "InputCore", "RHI", "PixelShader", "ComputeShader" });
+        PCHUsage = PCHUsageMode.UseExplicitOrSharedPCHs;
+
+        PublicDependencyModuleNames.AddRange(new string[] { "Core", "CoreUObject", "Engine", "InputCore", "RHI", "PixelShader", "ComputeShader" });
 	}
 }

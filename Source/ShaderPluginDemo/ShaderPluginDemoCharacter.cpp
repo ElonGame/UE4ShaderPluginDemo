@@ -1,7 +1,6 @@
 // Copyright 1998-2016 Epic Games, Inc. All Rights Reserved.
-
-#include "ShaderPluginDemo.h"
 #include "ShaderPluginDemoCharacter.h"
+#include "ShaderPluginDemo.h"
 #include "Animation/AnimInstance.h"
 #include "GameFramework/InputSettings.h"
 

@@ -81,6 +81,7 @@ void FPixelShaderUsageExample::ExecutePixelShader(UTextureRenderTarget2D* Render
 
 	//This macro sends the function we declare inside to be run on the render thread. What we do is essentially just send this class and tell the render thread to run the internal render function as soon as it can.
 	//I am still not 100% Certain on the thread safety of this, if you are getting crashes, depending on how advanced code you have in the start of the ExecutePixelShader function, you might have to use a lock :)
+	// Update to 4.22, replace 'ENQUEUE_UNIQUE_RENDER_COMMAND_ONEPARAMETER'
 	FPixelShaderUsageExample* PixelShader = (FPixelShaderUsageExample*)this;
 	ENQUEUE_RENDER_COMMAND(FPixelShaderRunner)(
 		[PixelShader](FRHICommandListImmediate& RHICmdList)
@@ -145,7 +146,14 @@ void FPixelShaderUsageExample::ExecutePixelShaderInternal()
 		PixelShader->SetUniformBuffers(RHICmdList, ConstantParameters, VariableParameters);
 
 		// Draw a fullscreen quad that we can run our pixel shader on
-		FTextureVertex Vertices[4];
+		// Update to 4.22, replace 'DrawPrimitiveUP'
+		FRHIResourceCreateInfo CreateInfo;
+		FVertexBufferRHIRef VertexBufferRHI = RHICreateVertexBuffer(sizeof(FTextureVertex) * 4, BUF_Volatile, CreateInfo);
+		void* VoidPtr = RHILockVertexBuffer(VertexBufferRHI, 0, sizeof(FTextureVertex) * 4, RLM_WriteOnly);
+
+		// Generate the vertices used
+		FTextureVertex* Vertices = (FTextureVertex*)VoidPtr;
+
 		Vertices[0].Position = FVector4(-1.0f, 1.0f, 0, 1.0f);
 		Vertices[1].Position = FVector4(1.0f, 1.0f, 0, 1.0f);
 		Vertices[2].Position = FVector4(-1.0f, -1.0f, 0, 1.0f);
@@ -155,9 +163,9 @@ void FPixelShaderUsageExample::ExecutePixelShaderInternal()
 		Vertices[2].UV = FVector2D(0, 1);
 		Vertices[3].UV = FVector2D(1, 1);
 
-		DrawPrimitiveUP(RHICmdList, PT_TriangleStrip, 2, Vertices, sizeof(Vertices[0]));
-
-		PixelShader->UnbindBuffers(RHICmdList);
+		RHIUnlockVertexBuffer(VertexBufferRHI);
+		RHICmdList.SetStreamSource(0, VertexBufferRHI, 0);
+		RHICmdList.DrawPrimitive(PT_TriangleList, 0, 2, 1);
 	}
 	RHICmdList.EndRenderPass();
 

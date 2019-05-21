@@ -81,13 +81,12 @@ void FPixelShaderUsageExample::ExecutePixelShader(UTextureRenderTarget2D* Render
 
 	//This macro sends the function we declare inside to be run on the render thread. What we do is essentially just send this class and tell the render thread to run the internal render function as soon as it can.
 	//I am still not 100% Certain on the thread safety of this, if you are getting crashes, depending on how advanced code you have in the start of the ExecutePixelShader function, you might have to use a lock :)
-	ENQUEUE_UNIQUE_RENDER_COMMAND_ONEPARAMETER(
-		FPixelShaderRunner,
-		FPixelShaderUsageExample*, PixelShader, this,
-		{
-			PixelShader->ExecutePixelShaderInternal();
-		}
-	);
+	FPixelShaderUsageExample* PixelShader = (FPixelShaderUsageExample*)this;
+	ENQUEUE_RENDER_COMMAND(FPixelShaderRunner)(
+		[PixelShader](FRHICommandListImmediate& RHICmdList)
+	{
+		PixelShader->ExecutePixelShaderInternal();
+	});
 }
 
 void FPixelShaderUsageExample::ExecutePixelShaderInternal()

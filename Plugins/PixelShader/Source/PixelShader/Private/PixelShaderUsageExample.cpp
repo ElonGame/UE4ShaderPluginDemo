@@ -165,7 +165,7 @@ void FPixelShaderUsageExample::ExecutePixelShaderInternal()
 
 		RHIUnlockVertexBuffer(VertexBufferRHI);
 		RHICmdList.SetStreamSource(0, VertexBufferRHI, 0);
-		RHICmdList.DrawPrimitive(PT_TriangleList, 0, 2, 1);
+		RHICmdList.DrawPrimitive(0, 2, 1);
 	}
 	RHICmdList.EndRenderPass();
 

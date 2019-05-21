@@ -189,16 +189,16 @@ void AShaderPluginDemoCharacter::OnFire() {
 }
 
 void AShaderPluginDemoCharacter::SetupPlayerInputComponent(
-    class UInputComponent* InputComponent) {
+    class UInputComponent* inputComponent) {
     // set up gameplay key bindings
-    check(InputComponent);
+    check(inputComponent);
 
     //ShaderPluginDemo Specific input mappings
-    InputComponent->BindAction("SavePixelShaderOutput", IE_Pressed, this,
+    inputComponent->BindAction("SavePixelShaderOutput", IE_Pressed, this,
                                &AShaderPluginDemoCharacter::SavePixelShaderOutput);
-    InputComponent->BindAction("SaveComputeShaderOutput", IE_Pressed, this,
+    inputComponent->BindAction("SaveComputeShaderOutput", IE_Pressed, this,
                                &AShaderPluginDemoCharacter::SaveComputeShaderOutput);
-    InputComponent->BindAxis("ComputeShaderBlend", this,
+    inputComponent->BindAxis("ComputeShaderBlend", this,
                              &AShaderPluginDemoCharacter::ModifyComputeShaderBlend);
     //ShaderPluginDemo Specific input mappings
 
@@ -228,28 +228,28 @@ void AShaderPluginDemoCharacter::SetupPlayerInputComponent(
 
 
 
-    InputComponent->BindAction("Jump", IE_Pressed, this, &ACharacter::Jump);
-    InputComponent->BindAction("Jump", IE_Released, this, &ACharacter::StopJumping);
+    inputComponent->BindAction("Jump", IE_Pressed, this, &ACharacter::Jump);
+    inputComponent->BindAction("Jump", IE_Released, this, &ACharacter::StopJumping);
 
     //InputComponent->BindTouch(EInputEvent::IE_Pressed, this, &AShaderPluginDemoCharacter::TouchStarted);
-    if (EnableTouchscreenMovement(InputComponent) == false) {
-        InputComponent->BindAction("Fire", IE_Pressed, this,
+    if (EnableTouchscreenMovement(inputComponent) == false) {
+        inputComponent->BindAction("Fire", IE_Pressed, this,
                                    &AShaderPluginDemoCharacter::OnFire);
     }
 
-    InputComponent->BindAxis("MoveForward", this,
+    inputComponent->BindAxis("MoveForward", this,
                              &AShaderPluginDemoCharacter::MoveForward);
-    InputComponent->BindAxis("MoveRight", this,
+    inputComponent->BindAxis("MoveRight", this,
                              &AShaderPluginDemoCharacter::MoveRight);
 
     // We have 2 versions of the rotation bindings to handle different kinds of devices differently
     // "turn" handles devices that provide an absolute delta, such as a mouse.
     // "turnrate" is for devices that we choose to treat as a rate of change, such as an analog joystick
-    InputComponent->BindAxis("Turn", this, &APawn::AddControllerYawInput);
-    InputComponent->BindAxis("TurnRate", this,
+    inputComponent->BindAxis("Turn", this, &APawn::AddControllerYawInput);
+    inputComponent->BindAxis("TurnRate", this,
                              &AShaderPluginDemoCharacter::TurnAtRate);
-    InputComponent->BindAxis("LookUp", this, &APawn::AddControllerPitchInput);
-    InputComponent->BindAxis("LookUpRate", this,
+    inputComponent->BindAxis("LookUp", this, &APawn::AddControllerPitchInput);
+    inputComponent->BindAxis("LookUpRate", this,
                              &AShaderPluginDemoCharacter::LookUpAtRate);
 }
 
@@ -337,17 +337,17 @@ void AShaderPluginDemoCharacter::LookUpAtRate(float Rate) {
 }
 
 bool AShaderPluginDemoCharacter::EnableTouchscreenMovement(
-    class UInputComponent* InputComponent) {
+    class UInputComponent* inputComponent) {
     bool bResult = false;
 
     if (FPlatformMisc::GetUseVirtualJoysticks() ||
             GetDefault<UInputSettings>()->bUseMouseForTouch) {
         bResult = true;
-        InputComponent->BindTouch(EInputEvent::IE_Pressed, this,
+        inputComponent->BindTouch(EInputEvent::IE_Pressed, this,
                                   &AShaderPluginDemoCharacter::BeginTouch);
-        InputComponent->BindTouch(EInputEvent::IE_Released, this,
+        inputComponent->BindTouch(EInputEvent::IE_Released, this,
                                   &AShaderPluginDemoCharacter::EndTouch);
-        InputComponent->BindTouch(EInputEvent::IE_Repeat, this,
+        inputComponent->BindTouch(EInputEvent::IE_Repeat, this,
                                   &AShaderPluginDemoCharacter::TouchUpdate);
     }
 

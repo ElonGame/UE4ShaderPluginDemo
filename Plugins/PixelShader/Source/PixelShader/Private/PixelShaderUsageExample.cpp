@@ -124,61 +124,42 @@ void FPixelShaderUsageExample::ExecutePixelShaderInternal()
 	TShaderMapRef<FVertexShaderExample> VertexShader(GetGlobalShaderMap(FeatureLevel));
 	TShaderMapRef<FPixelShaderDeclaration> PixelShader(GetGlobalShaderMap(FeatureLevel));
 
+	// Replacing 'SetRenderTarget' with 'RHIBegin/EndRenderPass'
+	FRHIRenderPassInfo RPInfo(CurrentRenderTarget->GetRenderTargetResource()->GetRenderTargetTexture(), ERenderTargetActions::DontLoad_Store, CurrentRenderTarget->GetRenderTargetResource()->TextureRHI);
+	RHICmdList.BeginRenderPass(RPInfo, TEXT("DrawRT"));
+	{
+		FGraphicsPipelineStateInitializer GraphicsPSOInit;
+		RHICmdList.ApplyCachedRenderTargets(GraphicsPSOInit);
+		GraphicsPSOInit.BlendState = TStaticBlendState<>::GetRHI();
+		GraphicsPSOInit.RasterizerState = TStaticRasterizerState<>::GetRHI();
+		GraphicsPSOInit.DepthStencilState = TStaticDepthStencilState<false, CF_Always>::GetRHI();
+		GraphicsPSOInit.PrimitiveType = PT_TriangleStrip;
+		GraphicsPSOInit.BoundShaderState.VertexDeclarationRHI = GTextureVertexDeclaration.VertexDeclarationRHI;
+		GraphicsPSOInit.BoundShaderState.VertexShaderRHI = GETSAFERHISHADER_VERTEX(*VertexShader);
+		GraphicsPSOInit.BoundShaderState.PixelShaderRHI = GETSAFERHISHADER_PIXEL(*PixelShader);
+		SetGraphicsPipelineState(RHICmdList, GraphicsPSOInit);
 
 
 
+		PixelShader->SetSurfaces(RHICmdList, TextureParameterSRV);
+		PixelShader->SetUniformBuffers(RHICmdList, ConstantParameters, VariableParameters);
 
+		// Draw a fullscreen quad that we can run our pixel shader on
+		FTextureVertex Vertices[4];
+		Vertices[0].Position = FVector4(-1.0f, 1.0f, 0, 1.0f);
+		Vertices[1].Position = FVector4(1.0f, 1.0f, 0, 1.0f);
+		Vertices[2].Position = FVector4(-1.0f, -1.0f, 0, 1.0f);
+		Vertices[3].Position = FVector4(1.0f, -1.0f, 0, 1.0f);
+		Vertices[0].UV = FVector2D(0, 0);
+		Vertices[1].UV = FVector2D(1, 0);
+		Vertices[2].UV = FVector2D(0, 1);
+		Vertices[3].UV = FVector2D(1, 1);
 
+		DrawPrimitiveUP(RHICmdList, PT_TriangleStrip, 2, Vertices, sizeof(Vertices[0]));
 
-
-
-	CurrentTexture = CurrentRenderTarget->GetRenderTargetResource()->GetRenderTargetTexture();
-	SetRenderTarget(RHICmdList, CurrentTexture, FTextureRHIRef());
-	//RHICmdList.SetBlendState(TStaticBlendState<>::GetRHI());
-	//RHICmdList.SetRasterizerState(TStaticRasterizerState<>::GetRHI());
-	//RHICmdList.SetDepthStencilState(TStaticDepthStencilState<false, CF_Always>::GetRHI());
-	//static FGlobalBoundShaderState BoundShaderState;
-	//SetGlobalBoundShaderState(RHICmdList, FeatureLevel, BoundShaderState, GTextureVertexDeclaration.VertexDeclarationRHI, *VertexShader, *PixelShader);
-
-
-	// Replacing old GlobalBoundShaderState with the new FGraphicsPipelineState (UE 4.17)
-	FGraphicsPipelineStateInitializer GraphicsPSOInit;
-	RHICmdList.ApplyCachedRenderTargets(GraphicsPSOInit);
-	GraphicsPSOInit.BlendState = TStaticBlendState<>::GetRHI();
-	GraphicsPSOInit.RasterizerState = TStaticRasterizerState<>::GetRHI();
-	GraphicsPSOInit.DepthStencilState = TStaticDepthStencilState<false, CF_Always>::GetRHI();
-	GraphicsPSOInit.PrimitiveType = PT_TriangleStrip;
-	GraphicsPSOInit.BoundShaderState.VertexDeclarationRHI = GTextureVertexDeclaration.VertexDeclarationRHI;
-	GraphicsPSOInit.BoundShaderState.VertexShaderRHI = GETSAFERHISHADER_VERTEX(*VertexShader);
-	GraphicsPSOInit.BoundShaderState.PixelShaderRHI = GETSAFERHISHADER_PIXEL(*PixelShader);
-	SetGraphicsPipelineState(RHICmdList, GraphicsPSOInit);
-
-
-
-	PixelShader->SetSurfaces(RHICmdList, TextureParameterSRV);
-	PixelShader->SetUniformBuffers(RHICmdList, ConstantParameters, VariableParameters);
-
-	// Draw a fullscreen quad that we can run our pixel shader on
-	FTextureVertex Vertices[4];
-	Vertices[0].Position = FVector4(-1.0f, 1.0f, 0, 1.0f);
-	Vertices[1].Position = FVector4(1.0f, 1.0f, 0, 1.0f);
-	Vertices[2].Position = FVector4(-1.0f, -1.0f, 0, 1.0f);
-	Vertices[3].Position = FVector4(1.0f, -1.0f, 0, 1.0f);
-	Vertices[0].UV = FVector2D(0, 0);
-	Vertices[1].UV = FVector2D(1, 0);
-	Vertices[2].UV = FVector2D(0, 1);
-	Vertices[3].UV = FVector2D(1, 1);
-
-	DrawPrimitiveUP(RHICmdList, PT_TriangleStrip, 2, Vertices, sizeof(Vertices[0]));
-
-	PixelShader->UnbindBuffers(RHICmdList);
-
-	// Resolve render target.
-	RHICmdList.CopyToResolveTarget(
-		CurrentRenderTarget->GetRenderTargetResource()->GetRenderTargetTexture(),
-		CurrentRenderTarget->GetRenderTargetResource()->TextureRHI,
-		FResolveParams());
-
+		PixelShader->UnbindBuffers(RHICmdList);
+	}
+	RHICmdList.EndRenderPass();
 
 	if (bSave) //Save to disk if we have a save request!
 	{
